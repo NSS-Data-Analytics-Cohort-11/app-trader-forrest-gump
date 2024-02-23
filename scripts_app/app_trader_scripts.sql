@@ -76,6 +76,42 @@ GROUP BY app_name, app_purchase_price
 ORDER BY avg_rating DESC;
 
 
+--Net Revenue
+SELECT sub.app_name,(CASE
+	WHEN ROUND(AVG(rating)) < 0.49
+	THEN 1
+	ELSE ROUND(AVG(rating))/0.50+1) longevity --,(9000*12*sub.longevity) AS gross_revenue
+FROM
+
+(SELECT app_name, app_purchase_price, ROUND(AVG(rating), 1) AS avg_rating,
+-- CASE
+-- 	WHEN ROUND(AVG(rating)) < 0.49
+-- 	THEN 1
+-- 	ELSE ROUND(AVG(rating))/0.50+1
+-- 	END AS longevity
+FROM
+	(SELECT name AS app_name, genres, MONEY(price), rating, 'play_store' AS app,
+		CASE WHEN MONEY(price) BETWEEN '$0' AND '$1'
+		THEN '$10,000'
+		ELSE MONEY(price)*10000
+		END AS app_purchase_price
+	FROM play_store_apps
+	WHERE rating IS NOT NULL
+	UNION
+	SELECT name AS app_name, primary_genre, MONEY(price), rating, 'app_store' AS app,
+		CASE WHEN MONEY(price) BETWEEN '$0' AND '$1'
+		THEN '$10,000'
+		ELSE MONEY(price)*10000
+		END AS app_purchase_price
+	FROM app_store_apps
+	WHERE rating IS NOT NULL)) AS sub
+
+	
+GROUP BY sub.app_name, app_purchase_price
+ORDER BY avg_rating DESC;
+
+
+
 
 
 select name,rating
