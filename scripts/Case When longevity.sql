@@ -23,7 +23,8 @@
 -- 	ELSE ROUND(AVG(rating))/0.50+1
 -- 	END AS longevity
 
-SELECT name, ROUND(AVG(rating), 1) AS avg_rating, size_bytes, CAST(price AS MONEY), CAST(review_count AS INTEGER), rating, age, primary_genre,
+SELECT name, ROUND(AVG(rating), 1) AS avg_rating, size_bytes, CAST(price AS MONEY), CAST(review_count AS INTEGER), rating, age, primary_genre, longevity, MONEY(longevity*9000*12) AS yearly_profit
+FROM (SELECT name, ROUND(AVG(rating), 1) AS avg_rating, size_bytes, CAST(price AS MONEY), CAST(review_count AS INTEGER), rating, age, primary_genre, purchase_price,
 CASE 
 	WHEN ROUND(AVG(rating)) <= 0.49
 	THEN 1 
@@ -51,6 +52,7 @@ WHERE MONEY(price) <='$1.00'
  	AND rating IS NOT NULL
  	AND review_count >= 500
 GROUP BY name, size, MONEY(price), review_count, content_rating, genres, purchase_price, rating)
-GROUP BY name, size_bytes, CAST(price AS MONEY), CAST(review_count AS INTEGER), rating, age, primary_genre, purchase_price
-ORDER BY avg_rating DESC;
+GROUP BY name, size_bytes, CAST(price AS MONEY), CAST(review_count AS INTEGER), rating, age, primary_genre, purchase_price)
+GROUP BY name, size_bytes, CAST(price AS MONEY), CAST(review_count AS INTEGER), rating, age, primary_genre, purchase_price, longevity, yearly_profit
+ORDER BY yearly_profit DESC;
 
