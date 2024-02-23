@@ -89,11 +89,38 @@ ORDER BY name)
 
 
 --is currency the same?
-SELECT DISTINCT(currency) 
-FROM app_store_apps
+-- SELECT DISTINCT(currency) 
+-- FROM app_store_apps
 
-SELECT DISTINCT(currency) 
-FROM play_store_apps
+-- SELECT DISTINCT(currency) 
+-- FROM play_store_apps
 
-SELECT DISTINCT primary_genre
-FROM app_store_apps;
+-- SELECT DISTINCT primary_genre
+-- FROM app_store_apps;
+
+SELECT app_name, app_purchase_price, ROUND(AVG(rating), 1) AS avg_rating, 
+CASE
+	WHEN ROUND(AVG(rating)) < 0.49
+	THEN 1
+	ELSE ROUND(AVG(rating))/0.50+1
+	END AS longevity, 
+--longevity *(MONEY (9000*12)) AS yearly_revenue
+
+FROM
+	(SELECT name AS app_name, genres, MONEY(price), rating, 'play_store' AS app, 
+		CASE WHEN MONEY(price) BETWEEN '$0' AND '$1'
+		THEN '$10,000'
+		ELSE MONEY(price)*10000
+		END AS app_purchase_price
+	FROM play_store_apps
+	WHERE rating IS NOT NULL
+	UNION
+	SELECT name AS app_name, primary_genre, MONEY(price), rating, 'app_store' AS app,
+		CASE WHEN MONEY(price) BETWEEN '$0' AND '$1'
+		THEN '$10,000'
+		ELSE MONEY(price)*10000
+		END AS app_purchase_price
+	FROM app_store_apps
+	WHERE rating IS NOT NULL)
+GROUP BY app_name, app_purchase_price
+ORDER BY longevity;
