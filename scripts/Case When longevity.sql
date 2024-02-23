@@ -23,9 +23,9 @@
 -- 	ELSE ROUND(AVG(rating))/0.50+1
 -- 	END AS longevity
 
-SELECT name, ROUND(AVG(rating), 1) AS avg_rating, 
+SELECT name, ROUND(AVG(rating), 1) AS avg_rating, size_bytes, CAST(price AS MONEY), CAST(review_count AS INTEGER), rating, age, primary_genre,
 CASE 
-	WHEN ROUND(AVG(rating)) < 0.49
+	WHEN ROUND(AVG(rating)) <= 0.49
 	THEN 1 
 	ELSE ROUND(AVG(rating))/0.50+1
 	END AS longevity
@@ -37,9 +37,9 @@ CASE WHEN MONEY(price) BETWEEN '$0' AND '$1'
 	END AS purchase_price 
 FROM public.app_store_apps
 WHERE price <=1.00
-	AND CAST(review_count AS INTEGER)>500
+ 	AND rating IS NOT NULL
+	AND CAST(review_count AS INTEGER)>=500
 GROUP BY name, size_bytes, CAST(price AS MONEY), CAST(review_count AS INTEGER), age, primary_genre, purchase_price, rating
-HAVING AVG(rating) > 4.0
 UNION
 SELECT name, size, MONEY(price), review_count, rating, content_rating, genres,
 CASE WHEN MONEY(price) BETWEEN '$0' AND '$1'
@@ -48,9 +48,9 @@ CASE WHEN MONEY(price) BETWEEN '$0' AND '$1'
 	END AS purchase_price 
 FROM public.play_store_apps
 WHERE MONEY(price) <='$1.00'
-	AND review_count>500
-GROUP BY name, size, MONEY(price), review_count, content_rating, genres, purchase_price, rating
-HAVING AVG(rating) > 4.0)
-GROUP BY name
+ 	AND rating IS NOT NULL
+ 	AND review_count >= 500
+GROUP BY name, size, MONEY(price), review_count, content_rating, genres, purchase_price, rating)
+GROUP BY name, size_bytes, CAST(price AS MONEY), CAST(review_count AS INTEGER), rating, age, primary_genre, purchase_price
 ORDER BY avg_rating DESC;
 
